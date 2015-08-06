@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import GaussianNB, BernoulliNB
 from sklearn import cross_validation as cv
 from sklearn import metrics
 from sklearn import ensemble
@@ -223,6 +223,19 @@ def rayleigh(x, mean, std, min):
     scale = np.sqrt(2./(4. - np.pi)) * std
     return rayleighPDF(x, loc, scale)
 
+def bernoulliPMF(x, p):
+    result = x
+    if result.size == 1:
+        if result == 0 : result = 1 - p
+        else: result = p
+    else:
+        result[np.where(x == 0)] = 1 - p
+        result[np.where(x == 1)] = p
+    return result
+
+def bernoulli(x, mean, std, min):
+    return bernoulliPMF(x, mean)
+
 def NaiveBayesTrain(x, y):
     """
     Train Naive Bayes classifier for binary classes.
@@ -282,6 +295,8 @@ c1 = stats.expon.rvs(loc=0, scale = 5, size=size1)
 # c1 = stats.cauchy.rvs(loc=5, scale = .2, size=size1)
 # c0 = stats.rayleigh.rvs(loc=7, scale = 5, size=size0)
 # c1 = stats.rayleigh.rvs(loc=0, scale = 5, size=size1)
+# c0 = stats.bernoulli.rvs(p = 0.3, size=size0)
+# c1 = stats.bernoulli.rvs(p = 0.8, size=size1)
 
 bins = np.linspace(0,20,41)
 binWidth = bins[1] - bins[0]
@@ -302,7 +317,7 @@ plt.bar(bins0[:-1],vals0*multiplier, width=binWidth, alpha=.5, color='b', label=
 plt.bar(bins1[:-1],vals1*multiplier, width=binWidth, alpha=.5, color='r', label="class1")
 
 xPDF = np.linspace(0,20,501)
-plt.plot(xPDF, gaussianPDF(xPDF, 10, 4.8)*multiplier, label="gaussian", linewidth=2)###
+plt.plot(xPDF, gaussianPDF(xPDF, 10, 4.8)*multiplier, label="gaussian", linewidth=2)
 # plt.plot(xPDF, cauchyPDF(xPDF, 15, .5)*multiplier, label="cauchy", linewidth=2)
 plt.plot(xPDF, exponPDF(xPDF, 5, 4.8)*multiplier, label="expon", linewidth=2)
 # plt.plot(xPDF, rayleighPDF(xPDF, 7, 5)*multiplier, label="rayleigh", linewidth=2)
@@ -333,6 +348,7 @@ trainedNB = NaiveBayesTrain(x, y)
 # predict   = NaiveBayesPredict(xCV, trainedNB, cauchy)
 predict   = NaiveBayesPredict(xCV, trainedNB, expon)
 # predict   = NaiveBayesPredict(xCV, trainedNB, rayleigh)
+# predict   = NaiveBayesPredict(xCV, trainedNB, bernoulli)
 print "\n>>>>>>>> Manual Naive Bayes Classifier:"
 print trainedNB
 print 'CV Set Accuracy: {:.4f}'.format(sum(predict==yCV)*1./len(predict))
