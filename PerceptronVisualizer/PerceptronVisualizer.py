@@ -1,5 +1,16 @@
-# PerceptronVisualizer.py
-# Visualize perceptron learning algorithm (PLA) on 2D data
+'''
+PerceptronVisualizer.py
+Visualize perceptron learning algorithm (PLA) on 2D data.
+Yuri Brovman
+
+Run with command line argument '1' to see each algorithm iteration. Click on graph
+to advance to next iteration.
+%run PerceptionVisualizer.py 1
+
+Run without arguments to execute all algorithm iterations and see end result
+%run PerceptionVisualizer.py
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerLine2D
@@ -20,6 +31,9 @@ RedX2 = np.array([i[1] for i in dataClassRed])
 RedY  = np.zeros(5)-1
 Red = np.array([np.ones(5),RedX1, RedX2]).transpose()
 
+# Blue class label = +1, Red class lable = -1
+color = {1:'b',-1:'r'}
+
 BlueRedX = np.vstack((Blue, Red)).transpose()
 BlueRedY = np.concatenate([BlueY,RedY])
 xLine = np.linspace(0,15,151)
@@ -29,11 +43,29 @@ def mis(BlueRedX, BlueRedY, w):
     misclassified = np.sign(w.dot(BlueRedX)) == BlueRedY
     return np.where(misclassified == False)[0]
 
+def fill():
+    lowerLeft, lowerRight, upperRight, upperLeft = [1,0,0], [1,15,0], [1,15,15], [1,0,15]
+    corners = [lowerLeft, lowerRight, upperRight, upperLeft]
+    cLL, cLR = color[np.sign(w.dot(lowerLeft))], color[np.sign(w.dot(lowerRight))]
+    cUR, cUL = color[np.sign(w.dot(upperRight))], color[np.sign(w.dot(upperLeft))]
+    # colors = [cLL, cLR, cUR, cUL]
+    # for j, corner in enumerate(corners):
+    #     plt.plot(corner[1], corner[2], 'o', color=colors[j], markersize=25)
+
+    if -w[0]/w[2] <= 0:
+        if cUL > 0: blueFill, redFill = 15, 0
+        else: blueFill, redFill = 0, 15
+    else:
+        if cLL > 0: blueFill, redFill = 0, 15
+        else: blueFill, redFill = 15, 0
+
+    plt.fill_between(xLine, yLine, y2=blueFill, alpha = .3, color='b')
+    plt.fill_between(xLine, yLine, y2=redFill,  alpha = .3, color='r')
+
 def plotCurrent(yLine, currentPoint = [], currentLabel = 1, allMis = [], allMisLabel = []):
     plt.close('all')
     plt.plot(BlueX1,BlueX2, 'o', color = 'b')
     plt.plot(RedX1,RedX2, 'o', color = 'r')
-    color = {1:'b',-1:'r'}
     for j, p in enumerate(zip(allMis, allMisLabel)):
         if j == 0: m, = plt.plot(p[0][1], p[0][2], 'o', color='g', markersize=25, label='misclassified')
         else: plt.plot(p[0][1], p[0][2], 'o', color='g', markersize=25)
@@ -43,18 +75,16 @@ def plotCurrent(yLine, currentPoint = [], currentLabel = 1, allMis = [], allMisL
         plt.plot(currentPoint[1], currentPoint[2], 'o', color=color[currentLabel], markersize=5)
 
     plt.plot(xLine, yLine, color='k', linewidth=2)
-    if -w[1]/w[2] > 0 and -w[0]/w[2] >= 15: blue, red = 0, 15
-    else: blue, red = 15, 0
-    plt.fill_between(xLine, yLine, y2=blue, alpha = .3, color='b')
-    plt.fill_between(xLine, yLine, y2=red,  alpha = .3, color='r')
-    plt.xlabel('X1')
-    plt.ylabel('X2')
+    fill()
+    plt.xlabel('X1', fontsize=16)
+    plt.ylabel('X2', fontsize=16)
     plt.xlim([0,15])
     plt.ylim([0,15])
+    plt.tick_params(axis='both', which='major', labelsize=14)
     if len(currentPoint) != 0:
         plt.legend(handler_map={m: HandlerLine2D(numpoints=1), c: HandlerLine2D(numpoints=1)},
                 borderpad=0.8, labelspacing=1.2, loc='upper right')
-    plt.title("Perceptron Visualizer")
+    plt.title("Perceptron Visualizer", fontsize=20)
     plt.show(block=False)
 
 def printParams():
